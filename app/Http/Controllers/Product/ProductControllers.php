@@ -53,11 +53,13 @@ class ProductControllers extends Controller
 
                 if ($product_update) {
                     DB::commit();
-                    return redirect()->route('admin.users.index')->with(['success' => 'Produk Berhasil Dibuat!']);
+                    return redirect()->route('admin.product.index')->with(['success' => 'Produk Berhasil Dibuat!']);
                 } else {
                     DB::rollBack();
-                    return back()->with(['gagal' => 'Produk Gagal Diperbarui!']);
+                    return back()->with(['gagal' => 'Produk Gagal Dibuat!']);
                 }
+            } else {
+                return redirect()->route('admin.product.index')->with(['success' => 'Produk Berhasil Dibuat!']);
             }
         } else {
             DB::rollBack();
@@ -72,43 +74,39 @@ class ProductControllers extends Controller
         return $product_data->toArray();
     }
 
-    // Edit Data View by id
-    public function edit($id)
-    {
-        $data['title'] = "Edit Products";
-        $data['disabled_'] = '';
-        $data['url'] = 'update';
-        $data['products'] = Product::where('id', $id)->first();
-        $data['categories'] = Category::all();
-        return view('product.create', $data);
-    }
-
     // Update Function to Database
-    public function update(Request $req)
+    public function update(Request $request)
     {
-        date_default_timezone_set("Asia/Bangkok");
-        $datenow = date('Y-m-d H:i:s');
-        $product_pay = Product::where('id', $req->id)->update([
-            'product_name' => $req->name,
-            'category_id' => $req->category,
-            'price' => $req->price,
-            'desc' => $req->desc,
-            'updated_at' => $datenow,
-            'updated_by' => Auth::user()->id
+        DB::beginTransaction();
+        $product_result = Product::where('id', $request->id)->update([
+            'name' => $request->name,
+            'price' => $request->price,
         ]);
 
-        $destination = 'Uploads/Product/';
-        if ($req->hasFile('uploads')) {
-            $file = $req->file('uploads');
-            $name_file = time() . '_' . $req->file('uploads')->getClientOriginalName();
-            Storage::disk('Uploads')->putFileAs($destination, $file, $name_file);
-            Product::where('id', $req->id)->update(['upload' => $name_file]);
-        }
+        if ($product_result) {
+            DB::commit();
 
-        if (Auth::guard('admin')->check()) {
-            return redirect()->route('admin.product.index')->with(['success' => 'Data successfully updated!']);
+            $destination = 'Uploads/Product/';
+            if ($request->hasFile('picture')) {
+                $file = $request->file('picture');
+                $name_file = time() . '_' . $request->file('picture')->getClientOriginalName();
+                Storage::disk('Uploads')->putFileAs($destination, $file, $name_file);
+                DB::beginTransaction();
+                $product_update = Product::where('id', $request->id)->update(['picture' => $name_file]);
+
+                if ($product_update) {
+                    DB::commit();
+                    return redirect()->route('admin.product.index')->with(['success' => 'Produk Berhasil Diperbarui!']);
+                } else {
+                    DB::rollBack();
+                    return back()->with(['gagal' => 'Produk Gagal Diperbarui!']);
+                }
+            } else {
+                return redirect()->route('admin.product.index')->with(['success' => 'Produk Berhasil Dibuat!']);
+            }
         } else {
-            return redirect()->route('user.product.index')->with(['success' => 'Data successfully updated!']);
+            DB::rollBack();
+            return back()->with(['gagal' => 'Produk Gagal Diperbarui!']);
         }
     }
 

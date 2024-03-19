@@ -136,7 +136,7 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <form action="{{ route('admin.product.store') }}" method="post">
+                        <form action="{{ route('admin.product.store') }}" method="post" enctype="multipart/form-data" >
                             @csrf
                             <div class="modal-body">
                                 <div class="col-md-12">
@@ -187,7 +187,7 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-                        <form action="{{ route('admin.product.update') }}" method="post">
+                        <form action="{{ route('admin.product.update') }}" method="post" enctype="multipart/form-data" >
                             @csrf
                             <div class="modal-body">
                                 <div class="col-md-12">
@@ -203,7 +203,7 @@
                                             <span class="input-group-text bg-default">
                                                 Rp.
                                             </span>
-                                            <input type="number" style="text-align:right" name="edit_price"
+                                            <input type="number" style="text-align:right" name="price" id="edit_price"
                                                 class="form-control" required>
                                         </div>
                                     </div>
